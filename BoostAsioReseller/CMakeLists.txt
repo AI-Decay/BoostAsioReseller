@@ -3,6 +3,8 @@
 #
 
 cmake_minimum_required (VERSION 3.19)
+set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(BOOST_ROOT "E:/boost_1_74_0/stage")
 set(Boost_USE_STATIC_RUNTIME FALSE)
@@ -20,7 +22,7 @@ endif()
 
 include_directories (${Boost_INCLUDE_DIR})
 
-add_executable (main "src/main/main.cpp" "src/main/boost_asio_reseller.cpp" "src/main/boost_asio_reseller.h")
+add_executable (main "src/main/main.cpp" "src/main/boost_asio_reseller.cpp" "src/main/boost_asio_reseller.h" "src/tcp_socket/tcp_listener.h" "src/tcp_socket/tcp_listener.cpp")
 
 target_include_directories(main PUBLIC ${Boost_INCLUDE_DIRS}) 
 
