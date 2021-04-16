@@ -37,16 +37,18 @@ tcp_listener::listener_states tcp_listener::close() {
 void tcp_listener::start_listen() {
   boost::asio::io_service service;
   boost::asio::ip::tcp::endpoint endpoint{ip_address_, port_};
-  // boost::asio::ip::tcp::acceptor acceptor(service, endpoint);
-  // std::unique_ptr<boost::asio::ip::tcp::socket> socket{
-  //   std::make_unique<boost::asio::ip::tcp::socket>(service)};
+  boost::asio::ip::tcp::acceptor acceptor(service, endpoint);
+  std::unique_ptr<boost::asio::ip::tcp::socket> socket{
+      std::make_unique<boost::asio::ip::tcp::socket>(service)};
 
   if (state_ == listener_states::opening) {
-    //  acceptor.accept(*socket);
-    //  socket->read_some(boost::asio::buffer(buffer_));
+    acceptor.accept(*socket);
+    service.run();
     state_ = listener_states::opened;
   }
-
   while (state_ == listener_states::opened) {
+    socket->read_some(boost::asio::buffer(buffer_));
   }
+
+  service.stop();
 }
