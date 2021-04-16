@@ -2,8 +2,8 @@
 #include <iostream>
 
 int main() {
-  tcp_socket::tcp_listener listener(
-      boost::asio::ip::address::from_string("192.168.31.6"), 2000, 1024);
+  tcp_socket::tcp_listener listener(boost::asio::ip::address_v4::any(), 100,
+                                    100000);
   listener.open();
   listener.close();
 
