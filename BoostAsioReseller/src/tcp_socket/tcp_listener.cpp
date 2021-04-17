@@ -8,6 +8,7 @@ tcp_listener::tcp_listener(boost::asio::ip::address &&ip_address,
     : ip_address_(ip_address), port_(port),
       buffer_size_in_bytes_(buffer_size_in_bytes) {
   buffer_.resize(buffer_size_in_bytes_);
+  state_ = server_states::closed;
 }
 
 tcp_socket::tcp_listener::~tcp_listener() {
@@ -15,18 +16,18 @@ tcp_socket::tcp_listener::~tcp_listener() {
     listener_thread_.join();
 }
 
-tcp_listener::listener_states tcp_listener::open() {
-  if (state_ == listener_states::closed) {
+server_states tcp_listener::open() {
+  if (state_ == server_states::closed) {
     listener_thread_ = std::thread(&tcp_listener::start_listen, this);
-    state_ = listener_states::opening;
+    state_ = server_states::opening;
   }
 
   return state_;
 }
 
-tcp_listener::listener_states tcp_listener::close() {
-  if (state_ == listener_states::opened || state_ == listener_states::opening) {
-    state_ = listener_states::closing;
+server_states tcp_listener::close() {
+  if (state_ == server_states::opened || state_ == server_states::opening) {
+    state_ = server_states::closing;
     if (listener_thread_.joinable())
       listener_thread_.join();
   }
@@ -41,12 +42,12 @@ void tcp_listener::start_listen() {
   std::unique_ptr<boost::asio::ip::tcp::socket> socket{
       std::make_unique<boost::asio::ip::tcp::socket>(service)};
 
-  if (state_ == listener_states::opening) {
+  if (state_ == server_states::opening) {
     acceptor.accept(*socket);
     service.run();
-    state_ = listener_states::opened;
+    state_ = server_states::opened;
   }
-  while (state_ == listener_states::opened) {
+  while (state_ == server_states::opened) {
     socket->read_some(boost::asio::buffer(buffer_));
   }
 

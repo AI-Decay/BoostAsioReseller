@@ -1,6 +1,8 @@
 #ifndef TCP_LISTENER
 #define TCP_LISTENER
 #pragma once
+#include "detail/tcp_server.h"
+#include "tcp_server_states.h"
 #include <atomic>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/address.hpp>
@@ -8,14 +10,12 @@
 #include <thread>
 
 namespace tcp_socket {
-class tcp_listener {
+using namespace tcp_server_base;
+class tcp_listener : protected tcp_server {
 private:
-  enum class listener_states { opening, opened, closing, closed };
-
   const boost::asio::ip::address ip_address_;
-  const unsigned short port_;
+  const unsigned short port_ = 1;
   std::thread listener_thread_;
-  std::atomic<listener_states> state_ = {listener_states::closed};
   std::size_t buffer_size_in_bytes_ = 1024;
   std::vector<std::uint8_t> buffer_;
 
@@ -27,8 +27,8 @@ public:
 
   ~tcp_listener();
 
-  tcp_listener::listener_states open();
-  tcp_listener::listener_states close();
+  server_states open() override;
+  server_states close() override;
 };
 } // namespace tcp_socket
 #endif // TCP_LISTENER
