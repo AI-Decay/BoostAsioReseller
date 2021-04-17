@@ -22,7 +22,7 @@ endif()
 
 include_directories (${Boost_INCLUDE_DIR})
 
-add_executable (main "src/main/main.cpp" "src/main/boost_asio_reseller.cpp" "src/main/boost_asio_reseller.h" "src/tcp_socket/tcp_listener.h" "src/tcp_socket/tcp_listener.cpp")
+add_executable (main "src/main/main.cpp" "src/main/boost_asio_reseller.cpp" "src/main/boost_asio_reseller.h" "src/tcp_socket/tcp_listener.h" "src/tcp_socket/tcp_listener.cpp" "src/tcp_socket/detail/tcp_server.h" "src/tcp_socket/tcp_server_states.h")
 
 target_include_directories(main PUBLIC ${Boost_INCLUDE_DIRS}) 
 
