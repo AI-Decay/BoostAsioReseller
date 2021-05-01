@@ -17,7 +17,6 @@ private:
   const unsigned short port_ = 1;
   std::thread listener_thread_;
   std::size_t buffer_size_in_bytes_ = 1024;
-  std::vector<std::uint8_t> buffer_;
 
   void start_listen();
 

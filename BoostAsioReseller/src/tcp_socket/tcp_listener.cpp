@@ -1,13 +1,14 @@
 #include "tcp_listener.h"
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception_ptr.hpp>
 
 #include <iostream>
 using namespace tcp_socket;
 
 tcp_listener::tcp_listener(boost::asio::ip::address &&ip_address,
                            unsigned short port, size_t buffer_size_in_bytes)
-    : ip_address_(ip_address), port_(port),
-      buffer_size_in_bytes_(buffer_size_in_bytes) {
-  buffer_.resize(buffer_size_in_bytes_);
+    : ip_address_(std::forward<boost::asio::ip::address>(ip_address)),
+      port_(port), buffer_size_in_bytes_(buffer_size_in_bytes) {
   state_ = server_states::closed;
 }
 
@@ -36,20 +37,24 @@ server_states tcp_listener::close() {
 }
 
 void tcp_listener::start_listen() {
-  boost::asio::io_service service;
-  boost::asio::ip::tcp::endpoint endpoint{ip_address_, port_};
-  boost::asio::ip::tcp::acceptor acceptor(service, endpoint);
-  std::unique_ptr<boost::asio::ip::tcp::socket> socket{
-      std::make_unique<boost::asio::ip::tcp::socket>(service)};
+  try {
+    boost::asio::io_service service;
+    boost::asio::ip::tcp::endpoint endpoint{ip_address_, port_};
+    boost::asio::ip::tcp::acceptor acceptor(service, endpoint);
+    std::unique_ptr<boost::asio::ip::tcp::socket> socket{
+        std::make_unique<boost::asio::ip::tcp::socket>(service)};
+    std::vector<std::uint8_t> buffer_(buffer_size_in_bytes_);
 
-  if (state_ == server_states::opening) {
-    acceptor.accept(*socket);
-    service.run();
-    state_ = server_states::opened;
+    if (state_ == server_states::opening) {
+      acceptor.accept(*socket);
+      service.run();
+      state_ = server_states::opened;
+    }
+    while (state_ == server_states::opened) {
+      socket->read_some(boost::asio::buffer(buffer_));
+    }
+    service.stop();
+  } catch (boost::exception &ex) {
+    std::cout << boost::diagnostic_information(ex) << std::endl;
   }
-  while (state_ == server_states::opened) {
-    socket->read_some(boost::asio::buffer(buffer_));
-  }
-
-  service.stop();
 }
